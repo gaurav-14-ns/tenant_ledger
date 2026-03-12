@@ -50,3 +50,29 @@ text-align:center;
 font-size:18px;
 margin:6px 0;
 }
+
+.dashboard-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:15px;
+margin-top:10px;
+}
+
+.stat{
+background:#eef2ff;
+padding:15px;
+border-radius:10px;
+text-align:center;
+}
+
+.stat h3{
+margin:0;
+font-size:14px;
+color:#555;
+}
+
+.stat p{
+font-size:22px;
+font-weight:bold;
+margin-top:5px;
+}
