@@ -1,6 +1,6 @@
 body{
-font-family: Arial;
-background:#f5f7fb;
+font-family:Arial, Helvetica, sans-serif;
+background:#f4f6fb;
 margin:20px;
 }
 
@@ -17,8 +17,8 @@ box-shadow:0 2px 8px rgba(0,0,0,0.1);
 }
 
 input,select,button{
-margin:5px;
 padding:8px;
+margin:5px;
 }
 
 button{
@@ -29,13 +29,24 @@ border-radius:6px;
 cursor:pointer;
 }
 
+button:disabled{
+background:gray;
+cursor:not-allowed;
+}
+
 table{
 width:100%;
 border-collapse:collapse;
+margin-top:10px;
 }
 
-td,th{
+th,td{
 border:1px solid #ddd;
 padding:8px;
 text-align:center;
+}
+
+.dashboard div{
+font-size:18px;
+margin:6px 0;
 }
