@@ -1,78 +1,85 @@
 body{
-font-family:Arial, Helvetica, sans-serif;
-background:#f4f6fb;
+
+font-family:Arial;
+background:#f5f7fb;
 margin:20px;
+
 }
 
 h1{
+
 text-align:center;
+
 }
 
 .card{
+
 background:white;
 padding:20px;
 margin-bottom:20px;
 border-radius:10px;
 box-shadow:0 2px 8px rgba(0,0,0,0.1);
+
 }
 
 input,select,button{
+
 padding:8px;
 margin:5px;
+
 }
 
 button{
+
 background:#2563eb;
 color:white;
 border:none;
 border-radius:6px;
 cursor:pointer;
+
 }
 
 button:disabled{
+
 background:gray;
-cursor:not-allowed;
+
 }
 
 table{
+
 width:100%;
 border-collapse:collapse;
-margin-top:10px;
+
 }
 
 th,td{
+
 border:1px solid #ddd;
 padding:8px;
 text-align:center;
+
 }
 
-.dashboard div{
-font-size:18px;
-margin:6px 0;
-}
+.grid{
 
-.dashboard-grid{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-gap:15px;
-margin-top:10px;
+gap:10px;
+
 }
 
 .stat{
+
 background:#eef2ff;
-padding:15px;
-border-radius:10px;
+padding:10px;
+border-radius:8px;
 text-align:center;
-}
-
-.stat h3{
-margin:0;
-font-size:14px;
-color:#555;
-}
-
-.stat p{
-font-size:22px;
 font-weight:bold;
-margin-top:5px;
+
+}
+
+.inactive{
+
+background:#ffdede;
+
 }
