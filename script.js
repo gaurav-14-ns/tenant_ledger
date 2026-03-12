@@ -1,64 +1,81 @@
-let tenants = JSON.parse(localStorage.getItem("tenants")) || [];
+let members = JSON.parse(localStorage.getItem("members")) || [];
 let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
 
 function save(){
-localStorage.setItem("tenants",JSON.stringify(tenants));
+
+localStorage.setItem("members",JSON.stringify(members));
 localStorage.setItem("transactions",JSON.stringify(transactions));
+
 }
 
-function validateTenantForm(){
+function validateMemberForm(){
 
-let name=document.getElementById("tenantName").value.trim();
+let name=document.getElementById("memberName").value.trim();
 let group=document.getElementById("groupName").value.trim();
-let rent=document.getElementById("rent").value;
-let due=document.getElementById("dueDay").value;
 
-let btn=document.getElementById("addTenantBtn");
+document.getElementById("addMemberBtn").disabled = !(name && group);
 
-btn.disabled = !(name && group && rent && due);
 }
 
-function addTenant(){
+function addMember(){
 
-let tenant={
-name:document.getElementById("tenantName").value,
+let today=new Date().toISOString().split("T")[0];
+
+let member={
+
+name:document.getElementById("memberName").value,
 group:document.getElementById("groupName").value,
-rent:Number(document.getElementById("rent").value),
-due:Number(document.getElementById("dueDay").value)
+status:"active",
+active_from:today,
+inactive_on:null
+
 };
 
-tenants.push(tenant);
+members.push(member);
 
 save();
 render();
 
-document.getElementById("tenantName").value="";
+document.getElementById("memberName").value="";
 document.getElementById("groupName").value="";
-document.getElementById("rent").value="";
-document.getElementById("dueDay").value="";
 
-validateTenantForm();
 }
 
 function autoFillGroup(){
 
-let selected=document.getElementById("tenantSelect").value;
+let name=document.getElementById("memberSelect").value;
 
-let tenant=tenants.find(t=>t.name===selected);
+let m=members.find(x=>x.name===name);
 
-if(tenant){
-document.getElementById("groupInput").value=tenant.group;
+if(m){
+
+document.getElementById("groupInput").value=m.group;
+
 }
+
 }
 
 function addTransaction(){
 
+let date=document.getElementById("date").value;
+
+let today=new Date().toISOString().split("T")[0];
+
+if(date>today){
+
+alert("Future date not allowed");
+return;
+
+}
+
 let t={
-date:document.getElementById("date").value,
-tenant:document.getElementById("tenantSelect").value,
+
+date:date,
+member:document.getElementById("memberSelect").value,
 group:document.getElementById("groupInput").value,
 amount:Number(document.getElementById("amount").value),
 type:document.getElementById("type").value
+
 };
 
 transactions.push(t);
@@ -66,104 +83,176 @@ transactions.push(t);
 save();
 render();
 
-/* clear fields after entry */
 document.getElementById("amount").value="";
-document.getElementById("groupInput").value="";
+
 }
 
-function deleteTenant(index){
+function deactivateMember(i){
 
-if(confirm("Delete this tenant?")){
+let today=new Date().toISOString().split("T")[0];
 
-tenants.splice(index,1);
+members[i].status="inactive";
+members[i].inactive_on=today;
 
 save();
 render();
+
 }
-}
 
-function deleteTransaction(index){
+function deleteMember(i){
 
-if(confirm("Delete this record?")){
+if(confirm("Delete member?")){
 
-transactions.splice(index,1);
+members.splice(i,1);
 
 save();
 render();
+
 }
+
+}
+
+function deleteTransaction(i){
+
+if(confirm("Delete record?")){
+
+transactions.splice(i,1);
+
+save();
+render();
+
+}
+
 }
 
 function render(){
 
-/* Tenant dropdown */
-let select=document.getElementById("tenantSelect");
+let select=document.getElementById("memberSelect");
+
 select.innerHTML="";
 
-tenants.forEach(t=>{
+members
+.filter(m=>m.status==="active")
+.forEach(m=>{
+
 let opt=document.createElement("option");
-opt.text=t.name;
+opt.text=m.name;
 select.add(opt);
+
 });
 
-/* Dashboard calculations */
-
-let expected=tenants.reduce((a,b)=>a+b.rent,0);
+let expected = members.filter(m=>m.status==="active").length * 3000;
 
 let received=transactions
-.filter(t=>t.type=="Rent")
-.reduce((a,b)=>a+b.amount,0);
-
-let expenses=transactions
-.filter(t=>t.type!="Rent")
+.filter(t=>t.type==="Rent")
 .reduce((a,b)=>a+b.amount,0);
 
 document.getElementById("expected").innerText="₹"+expected;
 document.getElementById("received").innerText="₹"+received;
 document.getElementById("pending").innerText="₹"+(expected-received);
-document.getElementById("expenses").innerText="₹"+expenses;
 
-/* Tenant table */
 
-let table="<tr><th>Tenant</th><th>Group</th><th>Rent</th><th>Paid</th><th>Pending</th><th>Action</th></tr>";
 
-tenants.forEach((t,index)=>{
+let mtable="<tr><th>Name</th><th>Group</th><th>Status</th><th>Active From</th><th>Inactive On</th><th>Action</th></tr>";
 
-let paid = transactions
-.filter(tr => tr.tenant === t.name && tr.type == "Rent")
-.reduce((sum,tr) => sum + tr.amount,0);
+members.forEach((m,i)=>{
 
-let pending = t.rent - paid;
+mtable+=`<tr class="${m.status==='inactive'?'inactive':''}">
 
-table += `<tr>
-<td>${t.name}</td>
-<td>${t.group}</td>
-<td>${t.rent}</td>
-<td>${paid}</td>
-<td>${pending > 0 ? pending : 0}</td>
-<td><button onclick="deleteTenant(${index})">Delete</button></td>
+<td>${m.name}</td>
+<td>${m.group}</td>
+<td>${m.status}</td>
+<td>${m.active_from}</td>
+<td>${m.inactive_on || '-'}</td>
+
+<td>
+
+${m.status==='active'
+? `<button onclick="deactivateMember(${i})">Deactivate</button>`
+: ''}
+
+<button onclick="deleteMember(${i})">Delete</button>
+
+</td>
+
 </tr>`;
+
 });
 
-document.getElementById("tenantTable").innerHTML=table;
+document.getElementById("memberTable").innerHTML=mtable;
 
-/* Transaction table */
 
-let tx="<tr><th>Date</th><th>Tenant</th><th>Group</th><th>Type</th><th>Amount</th><th>Action</th></tr>";
 
-transactions.forEach((t,index)=>{
+let range=document.getElementById("rangeFilter").value;
+
+let list=[...transactions].reverse();
+
+if(range!=="all"){
+
+list=list.slice(0,Number(range));
+
+}
+
+let tx="<tr><th>Date</th><th>Member</th><th>Group</th><th>Type</th><th>Amount</th><th>Action</th></tr>";
+
+list.forEach((t,i)=>{
 
 tx+=`<tr>
+
 <td>${t.date}</td>
-<td>${t.tenant}</td>
+<td>${t.member}</td>
 <td>${t.group}</td>
 <td>${t.type}</td>
 <td>${t.amount}</td>
-<td><button onclick="deleteTransaction(${index})">Delete</button></td>
+
+<td><button onclick="deleteTransaction(${i})">Delete</button></td>
+
 </tr>`;
+
 });
 
 document.getElementById("transactionTable").innerHTML=tx;
 
 }
 
+function exportData(){
+
+let data={members,transactions};
+
+let blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+
+let a=document.createElement("a");
+
+a.href=URL.createObjectURL(blob);
+
+a.download="tenant-ledger-backup.json";
+
+a.click();
+
+}
+
+function importData(){
+
+let file=document.getElementById("importFile").files[0];
+
+let reader=new FileReader();
+
+reader.onload=function(){
+
+let data=JSON.parse(reader.result);
+
+members=data.members || [];
+transactions=data.transactions || [];
+
+save();
 render();
+
+};
+
+reader.readAsText(file);
+
+}
+
+render();
+
+document.getElementById("date").value=new Date().toISOString().split("T")[0];
