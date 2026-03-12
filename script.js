@@ -1,10 +1,12 @@
 let members = JSON.parse(localStorage.getItem("members")) || [];
 let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+let groups = JSON.parse(localStorage.getItem("groups")) || [];
 
 function save(){
 
 localStorage.setItem("members",JSON.stringify(members));
 localStorage.setItem("transactions",JSON.stringify(transactions));
+localStorage.setItem("groups",JSON.stringify(groups));
 
 }
 
@@ -12,32 +14,52 @@ function validateMemberForm(){
 
 let name=document.getElementById("memberName").value.trim();
 let group=document.getElementById("groupName").value.trim();
+let rent=document.getElementById("groupRent").value;
 
-document.getElementById("addMemberBtn").disabled = !(name && group);
+document.getElementById("addMemberBtn").disabled = !(name && group && rent);
 
 }
 
 function addMember(){
 
+let name=document.getElementById("memberName").value;
+let group=document.getElementById("groupName").value;
+let rent=Number(document.getElementById("groupRent").value);
+let phone=document.getElementById("phone").value;
+
 let today=new Date().toISOString().split("T")[0];
 
-let member={
+let g=groups.find(x=>x.group===group);
 
-name:document.getElementById("memberName").value,
-group:document.getElementById("groupName").value,
+if(!g){
+
+groups.push({group:group,rent:rent});
+
+}
+
+members.push({
+
+name,
+group,
+phone,
 status:"active",
 active_from:today,
 inactive_on:null
 
-};
-
-members.push(member);
+});
 
 save();
 render();
 
-document.getElementById("memberName").value="";
-document.getElementById("groupName").value="";
+}
+
+function validateTransactionForm(){
+
+let date=document.getElementById("date").value;
+let member=document.getElementById("memberSelect").value;
+let amount=document.getElementById("amount").value;
+
+document.getElementById("recordBtn").disabled = !(date && member && amount);
 
 }
 
@@ -57,20 +79,9 @@ document.getElementById("groupInput").value=m.group;
 
 function addTransaction(){
 
-let date=document.getElementById("date").value;
-
-let today=new Date().toISOString().split("T")[0];
-
-if(date>today){
-
-alert("Future date not allowed");
-return;
-
-}
-
 let t={
 
-date:date,
+date:document.getElementById("date").value,
 member:document.getElementById("memberSelect").value,
 group:document.getElementById("groupInput").value,
 amount:Number(document.getElementById("amount").value),
@@ -136,12 +147,15 @@ members
 .forEach(m=>{
 
 let opt=document.createElement("option");
-opt.text=m.name;
-select.add(opt);
+
+opt.value=m.name;
+opt.textContent=m.name;
+
+select.appendChild(opt);
 
 });
 
-let expected = members.filter(m=>m.status==="active").length * 3000;
+let expected=groups.reduce((sum,g)=>sum+g.rent,0);
 
 let received=transactions
 .filter(t=>t.type==="Rent")
@@ -152,8 +166,7 @@ document.getElementById("received").innerText="₹"+received;
 document.getElementById("pending").innerText="₹"+(expected-received);
 
 
-
-let mtable="<tr><th>Name</th><th>Group</th><th>Status</th><th>Active From</th><th>Inactive On</th><th>Action</th></tr>";
+let mtable="<tr><th>Name</th><th>Group</th><th>Phone</th><th>Status</th><th>Active From</th><th>Inactive On</th><th>Action</th></tr>";
 
 members.forEach((m,i)=>{
 
@@ -161,9 +174,10 @@ mtable+=`<tr class="${m.status==='inactive'?'inactive':''}">
 
 <td>${m.name}</td>
 <td>${m.group}</td>
+<td>${m.phone||'-'}</td>
 <td>${m.status}</td>
 <td>${m.active_from}</td>
-<td>${m.inactive_on || '-'}</td>
+<td>${m.inactive_on||'-'}</td>
 
 <td>
 
@@ -180,7 +194,6 @@ ${m.status==='active'
 });
 
 document.getElementById("memberTable").innerHTML=mtable;
-
 
 
 let range=document.getElementById("rangeFilter").value;
@@ -217,7 +230,7 @@ document.getElementById("transactionTable").innerHTML=tx;
 
 function exportData(){
 
-let data={members,transactions};
+let data={members,transactions,groups};
 
 let blob=new Blob([JSON.stringify(data)],{type:"application/json"});
 
@@ -241,8 +254,9 @@ reader.onload=function(){
 
 let data=JSON.parse(reader.result);
 
-members=data.members || [];
-transactions=data.transactions || [];
+members=data.members||[];
+transactions=data.transactions||[];
+groups=data.groups||[];
 
 save();
 render();
