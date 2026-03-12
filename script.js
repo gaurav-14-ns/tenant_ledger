@@ -16,7 +16,6 @@ let due=document.getElementById("dueDay").value;
 let btn=document.getElementById("addTenantBtn");
 
 btn.disabled = !(name && group && rent && due);
-
 }
 
 function addTenant(){
@@ -39,7 +38,6 @@ document.getElementById("rent").value="";
 document.getElementById("dueDay").value="";
 
 validateTenantForm();
-
 }
 
 function autoFillGroup(){
@@ -51,7 +49,6 @@ let tenant=tenants.find(t=>t.name===selected);
 if(tenant){
 document.getElementById("groupInput").value=tenant.group;
 }
-
 }
 
 function addTransaction(){
@@ -69,6 +66,9 @@ transactions.push(t);
 save();
 render();
 
+/* clear fields after entry */
+document.getElementById("amount").value="";
+document.getElementById("groupInput").value="";
 }
 
 function deleteTenant(index){
@@ -79,9 +79,7 @@ tenants.splice(index,1);
 
 save();
 render();
-
 }
-
 }
 
 function deleteTransaction(index){
@@ -92,13 +90,12 @@ transactions.splice(index,1);
 
 save();
 render();
-
 }
-
 }
 
 function render(){
 
+/* Tenant dropdown */
 let select=document.getElementById("tenantSelect");
 select.innerHTML="";
 
@@ -107,6 +104,8 @@ let opt=document.createElement("option");
 opt.text=t.name;
 select.add(opt);
 });
+
+/* Dashboard calculations */
 
 let expected=tenants.reduce((a,b)=>a+b.rent,0);
 
@@ -118,27 +117,41 @@ let expenses=transactions
 .filter(t=>t.type!="Rent")
 .reduce((a,b)=>a+b.amount,0);
 
-document.getElementById("expected").innerText="Expected Rent: ₹"+expected;
-document.getElementById("received").innerText="Rent Received: ₹"+received;
-document.getElementById("pending").innerText="Pending Rent: ₹"+(expected-received);
-document.getElementById("expenses").innerText="Expenses: ₹"+expenses;
+document.getElementById("expected").innerText="₹"+expected;
+document.getElementById("received").innerText="₹"+received;
+document.getElementById("pending").innerText="₹"+(expected-received);
+document.getElementById("expenses").innerText="₹"+expenses;
 
-let table="<tr><th>Tenant</th><th>Group</th><th>Rent</th><th>Action</th></tr>";
+/* Tenant table */
+
+let table="<tr><th>Tenant</th><th>Group</th><th>Rent</th><th>Paid</th><th>Pending</th><th>Action</th></tr>";
 
 tenants.forEach((t,index)=>{
-table+=`<tr>
+
+let paid = transactions
+.filter(tr => tr.tenant === t.name && tr.type == "Rent")
+.reduce((sum,tr) => sum + tr.amount,0);
+
+let pending = t.rent - paid;
+
+table += `<tr>
 <td>${t.name}</td>
 <td>${t.group}</td>
 <td>${t.rent}</td>
+<td>${paid}</td>
+<td>${pending > 0 ? pending : 0}</td>
 <td><button onclick="deleteTenant(${index})">Delete</button></td>
 </tr>`;
 });
 
 document.getElementById("tenantTable").innerHTML=table;
 
+/* Transaction table */
+
 let tx="<tr><th>Date</th><th>Tenant</th><th>Group</th><th>Type</th><th>Amount</th><th>Action</th></tr>";
 
 transactions.forEach((t,index)=>{
+
 tx+=`<tr>
 <td>${t.date}</td>
 <td>${t.tenant}</td>
