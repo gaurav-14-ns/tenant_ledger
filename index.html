@@ -1,1 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tenant Ledger</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 
+<body>
+
+<h1>Tenant Ledger</h1>
+
+<section class="card">
+<h2>Add Tenant</h2>
+<input id="tenantName" placeholder="Tenant Name">
+<input id="groupName" placeholder="Group Name">
+<input id="rent" placeholder="Monthly Rent" type="number">
+<input id="dueDay" placeholder="Due Day (1-31)" type="number">
+<button onclick="addTenant()">Add Tenant</button>
+</section>
+
+<section class="card">
+<h2>Record Transaction</h2>
+<input id="date" type="date">
+
+<select id="tenantSelect"></select>
+
+<input id="groupInput" placeholder="Group">
+
+<input id="amount" placeholder="Amount" type="number">
+
+<select id="type">
+<option>Rent</option>
+<option>Electricity</option>
+<option>Other</option>
+</select>
+
+<button onclick="addTransaction()">Record</button>
+</section>
+
+<section class="card dashboard">
+<h2>Dashboard</h2>
+<div id="expected"></div>
+<div id="received"></div>
+<div id="pending"></div>
+<div id="expenses"></div>
+</section>
+
+<section class="card">
+<h2>Tenant Status</h2>
+<table id="tenantTable"></table>
+</section>
+
+<section class="card">
+<h2>Transactions</h2>
+<table id="transactionTable"></table>
+</section>
+
+<section class="card">
+<h2>Monthly Cashflow</h2>
+<canvas id="chart"></canvas>
+</section>
+
+<script src="script.js"></script>
+
+</body>
+</html>
