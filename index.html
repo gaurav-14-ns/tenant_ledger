@@ -4,16 +4,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Tenant Ledger</title>
-
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
 <h1>Tenant Ledger</h1>
+
+<!-- GROUP SETUP -->
+
+<div class="card">
+
+<h2>Create / Update Group</h2>
+
+<input id="groupName" placeholder="Group Name" oninput="validateGroupForm()">
+
+<input id="groupRent" type="number" placeholder="Rent Amount" oninput="validateGroupForm()">
+
+<select id="rentMode" onchange="validateGroupForm()">
+<option value="">Rent Mode</option>
+<option value="GROUP">Group Payment</option>
+<option value="MEMBER">Per Member Payment</option>
+</select>
+
+<button id="addGroupBtn" onclick="addGroup()" disabled>Save Group</button>
+
+</div>
+
+
+<!-- MEMBER -->
 
 <div class="card">
 
@@ -21,9 +41,7 @@
 
 <input id="memberName" placeholder="Member Name" oninput="validateMemberForm()">
 
-<input id="groupName" placeholder="Group Name" oninput="validateMemberForm()">
-
-<input id="groupRent" type="number" placeholder="Group Rent" oninput="validateMemberForm()">
+<select id="memberGroup" onchange="validateMemberForm()"></select>
 
 <input id="phone" placeholder="Phone (optional)">
 
@@ -31,6 +49,8 @@
 
 </div>
 
+
+<!-- TRANSACTION -->
 
 <div class="card">
 
@@ -45,6 +65,7 @@
 <input id="amount" type="number" placeholder="Amount" oninput="validateTransactionForm()">
 
 <select id="type">
+<option value="">Type</option>
 <option>Rent</option>
 <option>Electricity</option>
 <option>Other</option>
@@ -54,6 +75,8 @@
 
 </div>
 
+
+<!-- DASHBOARD -->
 
 <div class="card">
 
@@ -81,6 +104,19 @@ Pending Rent
 </div>
 
 
+<!-- MONTHLY STATUS -->
+
+<div class="card">
+
+<h2>Monthly Rent Status</h2>
+
+<div id="statusTable"></div>
+
+</div>
+
+
+<!-- MEMBERS -->
+
 <div class="card">
 
 <h2>Members</h2>
@@ -89,6 +125,8 @@ Pending Rent
 
 </div>
 
+
+<!-- TRANSACTIONS -->
 
 <div class="card">
 
@@ -105,6 +143,8 @@ Pending Rent
 
 </div>
 
+
+<!-- DATA BACKUP -->
 
 <div class="card">
 
