@@ -1,47 +1,69 @@
 let members = JSON.parse(localStorage.getItem("members")) || [];
-let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
 let groups = JSON.parse(localStorage.getItem("groups")) || [];
+let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
 
 function save(){
 
 localStorage.setItem("members",JSON.stringify(members));
-localStorage.setItem("transactions",JSON.stringify(transactions));
 localStorage.setItem("groups",JSON.stringify(groups));
+localStorage.setItem("transactions",JSON.stringify(transactions));
+
+}
+
+function validateGroupForm(){
+
+let name=document.getElementById("groupName").value.trim();
+let rent=document.getElementById("groupRent").value;
+let mode=document.getElementById("rentMode").value;
+
+document.getElementById("addGroupBtn").disabled = !(name && rent && mode);
+
+}
+
+function addGroup(){
+
+let group={
+name:document.getElementById("groupName").value,
+rent:Number(document.getElementById("groupRent").value),
+mode:document.getElementById("rentMode").value
+};
+
+let existing=groups.find(g=>g.name===group.name);
+
+if(existing){
+
+existing.rent=group.rent;
+existing.mode=group.mode;
+
+}else{
+
+groups.push(group);
+
+}
+
+save();
+render();
 
 }
 
 function validateMemberForm(){
 
 let name=document.getElementById("memberName").value.trim();
-let group=document.getElementById("groupName").value.trim();
-let rent=document.getElementById("groupRent").value;
+let group=document.getElementById("memberGroup").value;
 
-document.getElementById("addMemberBtn").disabled = !(name && group && rent);
+document.getElementById("addMemberBtn").disabled = !(name && group);
 
 }
 
 function addMember(){
 
-let name=document.getElementById("memberName").value;
-let group=document.getElementById("groupName").value;
-let rent=Number(document.getElementById("groupRent").value);
-let phone=document.getElementById("phone").value;
-
 let today=new Date().toISOString().split("T")[0];
-
-let g=groups.find(x=>x.group===group);
-
-if(!g){
-
-groups.push({group:group,rent:rent});
-
-}
 
 members.push({
 
-name,
-group,
-phone,
+name:document.getElementById("memberName").value,
+group:document.getElementById("memberGroup").value,
+phone:document.getElementById("phone").value,
 status:"active",
 active_from:today,
 inactive_on:null
@@ -50,16 +72,6 @@ inactive_on:null
 
 save();
 render();
-
-}
-
-function validateTransactionForm(){
-
-let date=document.getElementById("date").value;
-let member=document.getElementById("memberSelect").value;
-let amount=document.getElementById("amount").value;
-
-document.getElementById("recordBtn").disabled = !(date && member && amount);
 
 }
 
@@ -74,6 +86,16 @@ if(m){
 document.getElementById("groupInput").value=m.group;
 
 }
+
+}
+
+function validateTransactionForm(){
+
+let date=document.getElementById("date").value;
+let member=document.getElementById("memberSelect").value;
+let amount=document.getElementById("amount").value;
+
+document.getElementById("recordBtn").disabled = !(date && member && amount);
 
 }
 
@@ -138,43 +160,88 @@ render();
 
 function render(){
 
-let select=document.getElementById("memberSelect");
+let groupSelect=document.getElementById("memberGroup");
+groupSelect.innerHTML="<option value=''>Select Group</option>";
 
-select.innerHTML="";
-
-members
-.filter(m=>m.status==="active")
-.forEach(m=>{
+groups.forEach(g=>{
 
 let opt=document.createElement("option");
+opt.value=g.name;
+opt.textContent=g.name;
 
-opt.value=m.name;
-opt.textContent=m.name;
-
-select.appendChild(opt);
+groupSelect.appendChild(opt);
 
 });
 
+
+let memberSelect=document.getElementById("memberSelect");
+memberSelect.innerHTML="";
+
+members.filter(m=>m.status==="active").forEach(m=>{
+
+let opt=document.createElement("option");
+opt.value=m.name;
+opt.textContent=m.name;
+
+memberSelect.appendChild(opt);
+
+});
+
+
 let expected=groups.reduce((sum,g)=>sum+g.rent,0);
 
-let received=transactions
-.filter(t=>t.type==="Rent")
-.reduce((a,b)=>a+b.amount,0);
+let received=transactions.filter(t=>t.type==="Rent").reduce((a,b)=>a+b.amount,0);
 
 document.getElementById("expected").innerText="₹"+expected;
 document.getElementById("received").innerText="₹"+received;
 document.getElementById("pending").innerText="₹"+(expected-received);
 
 
-let mtable="<tr><th>Name</th><th>Group</th><th>Phone</th><th>Status</th><th>Active From</th><th>Inactive On</th><th>Action</th></tr>";
+let statusHTML="";
+
+groups.forEach(g=>{
+
+statusHTML+=`<div class="groupbox"><b>Group ${g.name}</b><br>`;
+
+if(g.mode==="GROUP"){
+
+let paid=transactions.filter(t=>t.group===g.name && t.type==="Rent")
+.reduce((a,b)=>a+b.amount,0);
+
+let pending=g.rent-paid;
+
+statusHTML+=`Status: ${pending<=0?"Paid":"Pending ₹"+pending}`;
+
+}else{
+
+members.filter(m=>m.group===g.name && m.status==="active").forEach(m=>{
+
+let paid=transactions.filter(t=>t.member===m.name && t.type==="Rent")
+.reduce((a,b)=>a+b.amount,0);
+
+let pending=g.rent-paid;
+
+statusHTML+=`${m.name} : ${pending<=0?"Paid":"Pending ₹"+pending}<br>`;
+
+});
+
+}
+
+statusHTML+="</div>";
+
+});
+
+document.getElementById("statusTable").innerHTML=statusHTML;
+
+
+let mtable="<tr><th>Name</th><th>Group</th><th>Status</th><th>Active From</th><th>Inactive On</th><th>Action</th></tr>";
 
 members.forEach((m,i)=>{
 
-mtable+=`<tr class="${m.status==='inactive'?'inactive':''}">
+mtable+=`<tr>
 
 <td>${m.name}</td>
 <td>${m.group}</td>
-<td>${m.phone||'-'}</td>
 <td>${m.status}</td>
 <td>${m.active_from}</td>
 <td>${m.inactive_on||'-'}</td>
@@ -230,7 +297,7 @@ document.getElementById("transactionTable").innerHTML=tx;
 
 function exportData(){
 
-let data={members,transactions,groups};
+let data={members,groups,transactions};
 
 let blob=new Blob([JSON.stringify(data)],{type:"application/json"});
 
@@ -255,8 +322,8 @@ reader.onload=function(){
 let data=JSON.parse(reader.result);
 
 members=data.members||[];
-transactions=data.transactions||[];
 groups=data.groups||[];
+transactions=data.transactions||[];
 
 save();
 render();
