@@ -1,49 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Tenant Ledger</title>
 
 <link rel="stylesheet" href="style.css">
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
 <h1>Tenant Ledger</h1>
 
-<!-- ADD TENANT -->
+<!-- ADD MEMBER -->
 
-<section class="card">
+<div class="card">
 
-<h2>Add Tenant</h2>
+<h2>Add Member</h2>
 
-<input id="tenantName" placeholder="Tenant Name" oninput="validateTenantForm()">
+<input id="memberName" placeholder="Member Name" oninput="validateMemberForm()">
 
-<input id="groupName" placeholder="Group Name" oninput="validateTenantForm()">
+<input id="groupName" placeholder="Group Name" oninput="validateMemberForm()">
 
-<input id="rent" type="number" placeholder="Monthly Rent" oninput="validateTenantForm()">
+<button id="addMemberBtn" onclick="addMember()" disabled>Add Member</button>
 
-<input id="dueDay" type="number" placeholder="Due Day (1-31)" oninput="validateTenantForm()">
+</div>
 
-<button id="addTenantBtn" onclick="addTenant()" disabled>Add Tenant</button>
-
-</section>
 
 <!-- RECORD TRANSACTION -->
 
-<section class="card">
+<div class="card">
 
 <h2>Record Transaction</h2>
 
 <input id="date" type="date">
 
-<select id="tenantSelect" onchange="autoFillGroup()"></select>
+<select id="memberSelect" onchange="autoFillGroup()"></select>
 
-<input id="groupInput" placeholder="Group">
+<input id="groupInput" placeholder="Group" readonly>
 
 <input id="amount" type="number" placeholder="Amount">
 
@@ -53,61 +51,78 @@
 <option>Other</option>
 </select>
 
-<button onclick="addTransaction()">Record</button>
+<button id="recordBtn" onclick="addTransaction()">Record</button>
 
-</section>
+</div>
+
 
 <!-- DASHBOARD -->
 
-<section class="card dashboard">
+<div class="card">
 
 <h2>Dashboard</h2>
 
-<div class="dashboard-grid">
+<div class="grid">
 
 <div class="stat">
-<h3>Expected Rent</h3>
+Expected Rent
 <p id="expected"></p>
 </div>
 
 <div class="stat">
-<h3>Rent Received</h3>
+Rent Received
 <p id="received"></p>
 </div>
 
 <div class="stat">
-<h3>Pending Rent</h3>
+Pending Rent
 <p id="pending"></p>
 </div>
 
-<div class="stat">
-<h3>Expenses</h3>
-<p id="expenses"></p>
 </div>
 
 </div>
 
-</section>
 
-<!-- TENANT TABLE -->
+<!-- MEMBERS -->
 
-<section class="card">
+<div class="card">
 
-<h2>Tenant Status</h2>
+<h2>Members</h2>
 
-<table id="tenantTable"></table>
+<table id="memberTable"></table>
 
-</section>
+</div>
 
-<!-- TRANSACTION TABLE -->
 
-<section class="card">
+<!-- TRANSACTIONS -->
+
+<div class="card">
 
 <h2>Transactions</h2>
 
+<select id="rangeFilter" onchange="render()">
+<option value="10">Recent 10</option>
+<option value="25">Recent 25</option>
+<option value="50">Recent 50</option>
+<option value="all">All</option>
+</select>
+
 <table id="transactionTable"></table>
 
-</section>
+</div>
+
+
+<!-- DATA BACKUP -->
+
+<div class="card">
+
+<button onclick="exportData()">Export Data</button>
+
+<input type="file" id="importFile" onchange="importData()">
+
+</div>
+
 
 <script src="script.js"></script>
 
